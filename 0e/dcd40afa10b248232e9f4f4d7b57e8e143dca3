@@ -1,0 +1,30 @@
+resilience4j-ratelimiter/src/test/java/io/github/resilience4j/ratelimiter/RateLimiterEventPublisherTest.java
+  s_3057092e98f128::t_e9229c76097478 113
+  s_3057092e98f128::t_89c6818d3c969c 79-82
+  s_3057092e98f128::t_fe1a6124464ea7 22,28-29,78,90-112,114-129
+resilience4j-ratelimiter/src/main/java/io/github/resilience4j/ratelimiter/internal/SemaphoreBasedRateLimiter.java
+  s_3057092e98f128::t_bdc09ecd6646c9 169,172,174,178,256,264-265
+resilience4j-ratelimiter/src/main/java/io/github/resilience4j/ratelimiter/event/RateLimiterOnFailureEvent.java
+  s_3057092e98f128::t_eecefcf45e6513 21-22,25-27,29,33-37,39-40,43-47
+  s_3057092e98f128::t_8369647e38d36f 48
+resilience4j-ratelimiter/src/main/java/io/github/resilience4j/ratelimiter/internal/AtomicRateLimiter.java
+  s_3057092e98f128::t_5ad33e519274fa 132,146,152,156,415,423-424
+README.adoc
+  s_3057092e98f128::t_a49700bd5992e5 552-563
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0edcd40afa10b248232e9f4f4d7b57e8e143dca3",
+  "prompts": {},
+  "sessions": {
+    "s_3057092e98f128": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1d90d-e3f6-7583-89a6-05ee0632a35e",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Abhishek Varshney <abhishek.varshney@jiostar.com>"
+    }
+  }
+}
