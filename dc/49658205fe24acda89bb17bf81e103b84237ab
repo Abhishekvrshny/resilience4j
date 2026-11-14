@@ -1,0 +1,47 @@
+resilience4j-framework-common/src/test/java/io/github/resilience4j/common/retry/configuration/RetryConfigurationPropertiesTest.java
+  s_b10634e523ee2f::t_281e45c2bb4b42 267,269-275,277-278,280-290
+  s_b10634e523ee2f::t_b0ec4be6f6957b 251,276,279
+resilience4j-core/src/test/java/io/github/resilience4j/core/IntervalFunctionTest.java
+  s_b10634e523ee2f::t_d515be6e8e88ac 142,171-172
+  s_b10634e523ee2f::t_a46afce47e67a6 144-153,164,169
+  s_b10634e523ee2f::t_ad6e6712bd4879 141,154-163,166-167,170
+  s_b10634e523ee2f::t_a700c354eca16d 143,165
+  s_b10634e523ee2f::t_540a73cdad7cd6 168
+resilience4j-core/src/main/java/io/github/resilience4j/core/IntervalFunction.java
+  s_b10634e523ee2f::t_93bb17742e8649 270,272
+  s_b10634e523ee2f::t_cab75d3c14affa 97,99,113-114,140,142,158,262,264
+  s_b10634e523ee2f::t_e17c76498f1897 263,265
+  s_b10634e523ee2f::t_f06cd54baec1a8 266-268
+resilience4j-framework-common/src/main/java/io/github/resilience4j/common/retry/configuration/CommonRetryConfigurationProperties.java
+  s_b10634e523ee2f::t_846555eafe2e0f 499,501
+  s_b10634e523ee2f::t_7dde21beb24b2d 461,463
+  s_b10634e523ee2f::t_6efad854e0979d 178-181
+resilience4j-retry/src/test/java/io/github/resilience4j/retry/RetryConfigBuilderTest.java
+  s_b10634e523ee2f::t_7ff9053e891a58 41-50,68-71
+  s_b10634e523ee2f::t_dac01ab4370b66 72
+README.adoc
+  s_b10634e523ee2f::t_f7891afdf70765 124,127
+  s_b10634e523ee2f::t_c4a13c0b0b5e03 118-123,125-126,128
+resilience4j-framework-common/src/test/java/io/github/resilience4j/common/retry/configuration/CommonRetryConfigurationPropertiesTest.java
+  s_b10634e523ee2f::t_727f013e007d57 28,31-34,104
+  s_b10634e523ee2f::t_3352392fc180a8 29-30
+  s_b10634e523ee2f::t_2670fd20a91c0b 27
+resilience4j-retry/src/main/java/io/github/resilience4j/retry/RetryConfig.java
+  s_b10634e523ee2f::t_1b912631ab05b8 35-38,244,251-254,258
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "dc49658205fe24acda89bb17bf81e103b84237ab",
+  "prompts": {},
+  "sessions": {
+    "s_b10634e523ee2f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1d87e-02ba-74f1-8407-f5105061b6fa",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Abhishek Varshney <abhishek.varshney@jiostar.com>"
+    }
+  }
+}
