@@ -65,7 +65,37 @@ class RetryConfigBuilderTest {
     }
 
     @Test
-    void testCreateFromConfigurationWithNoPredicateCalculations() {
+    void jitterCanBeControlledAndIsBounded() {
+        RetryConfig config = RetryConfig.<Object>custom()
+            .intervalFunction(IntervalFunction.of(100L))
+            .jitterFactor(0.5)
+            .randomSupplier(() -> 0.0)
+            .maxInterval(Duration.ofMillis(60))
+            .build();
+
+        assertThat(config.getIntervalBiFunction().apply(1, null)).isEqualTo(50L);
+    }
+
+    @Test
+    void jitterCannotProduceNegativeIntervals() {
+        RetryConfig config = RetryConfig.<Object>custom()
+            .intervalFunction(ignored -> -100L)
+            .jitterFactor(1.0)
+            .randomSupplier(() -> 0.0)
+            .build();
+
+        assertThat(config.getIntervalBiFunction().apply(1, null)).isZero();
+    }
+
+    @Test
+    void jitterDisabledPreservesConfiguredInterval() {
+        RetryConfig config = RetryConfig.<Object>custom()
+            .intervalFunction(IntervalFunction.of(100L))
+            .build();
+
+        assertThat(config.getIntervalBiFunction().apply(1, null)).isEqualTo(100L);
+    }
+
         RetryConfig config = RetryConfig
             .from(RetryConfig.custom().retryOnException(e -> e instanceof IllegalArgumentException)
                 .build()).build();

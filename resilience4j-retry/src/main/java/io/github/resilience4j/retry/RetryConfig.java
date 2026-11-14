@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.DoubleSupplier;
 
 public class RetryConfig implements Serializable {
 
@@ -65,6 +66,10 @@ public class RetryConfig implements Serializable {
     private transient IntervalFunction intervalFunction;
 
     private transient IntervalBiFunction intervalBiFunction = DEFAULT_INTERVAL_BI_FUNCTION;
+    @Nullable
+    private transient IntervalBiFunction baseIntervalBiFunction;
+    private double jitterFactor;
+    private long maxIntervalMillis = Long.MAX_VALUE;
 
     // The final exception predicate
     private transient Predicate<Throwable> exceptionPredicate;
@@ -195,6 +200,9 @@ public class RetryConfig implements Serializable {
 
         @Nullable
         private IntervalBiFunction<T> intervalBiFunction;
+        private double jitterFactor;
+        private long maxIntervalMillis = Long.MAX_VALUE;
+        private DoubleSupplier randomSupplier = Math::random;
 
         @Nullable
         BiConsumer<Integer, T> consumeResultBeforeRetryAttempt;
@@ -215,12 +223,15 @@ public class RetryConfig implements Serializable {
             this.consumeResultBeforeRetryAttempt = baseConfig.consumeResultBeforeRetryAttempt;
             this.failAfterMaxAttempts = baseConfig.failAfterMaxAttempts;
             this.writableStackTraceEnabled = baseConfig.writableStackTraceEnabled;
+            this.jitterFactor = baseConfig.jitterFactor;
+            this.maxIntervalMillis = baseConfig.maxIntervalMillis;
             this.retryExceptions = baseConfig.retryExceptions;
             this.ignoreExceptions = baseConfig.ignoreExceptions;
             if (baseConfig.intervalFunction != null) {
                 this.intervalFunction = baseConfig.intervalFunction;
             } else {
-                this.intervalBiFunction = baseConfig.intervalBiFunction;
+                this.intervalBiFunction = baseConfig.baseIntervalBiFunction != null
+                    ? baseConfig.baseIntervalBiFunction : baseConfig.intervalBiFunction;
             }
         }
 
@@ -240,6 +251,30 @@ public class RetryConfig implements Serializable {
                 throw new IllegalArgumentException(
                     "waitDuration must be a positive value");
             }
+            return this;
+        }
+
+        /** Configures symmetric proportional jitter for calculated retry intervals. */
+        public Builder<T> jitterFactor(double jitterFactor) {
+            if (Double.isNaN(jitterFactor) || jitterFactor < 0.0 || jitterFactor > 1.0) {
+                throw new IllegalArgumentException("jitterFactor must be between 0.0 and 1.0");
+            }
+            this.jitterFactor = jitterFactor;
+            return this;
+        }
+
+        /** Sets the upper bound applied after jitter. */
+        public Builder<T> maxInterval(Duration maxInterval) {
+            if (maxInterval.isNegative()) {
+                throw new IllegalArgumentException("maxInterval must be non-negative");
+            }
+            this.maxIntervalMillis = maxInterval.toMillis();
+            return this;
+        }
+
+        /** Supplies values in [0, 1) for deterministic jitter calculation. */
+        public Builder<T> randomSupplier(DoubleSupplier randomSupplier) {
+            this.randomSupplier = java.util.Objects.requireNonNull(randomSupplier);
             return this;
         }
 
@@ -389,6 +424,8 @@ public class RetryConfig implements Serializable {
             config.maxAttempts = maxAttempts;
             config.failAfterMaxAttempts = failAfterMaxAttempts;
             config.writableStackTraceEnabled = writableStackTraceEnabled;
+            config.jitterFactor = jitterFactor;
+            config.maxIntervalMillis = maxIntervalMillis;
             config.retryOnExceptionPredicate = retryOnExceptionPredicate;
             config.retryOnResultPredicate = retryOnResultPredicate;
             config.consumeResultBeforeRetryAttempt = consumeResultBeforeRetryAttempt;
@@ -396,8 +433,22 @@ public class RetryConfig implements Serializable {
             config.ignoreExceptions = ignoreExceptions;
             config.exceptionPredicate = createExceptionPredicate();
             config.intervalFunction = createIntervalFunction();
-            config.intervalBiFunction = Optional.ofNullable(intervalBiFunction)
+            IntervalBiFunction<T> configuredInterval = Optional.ofNullable(intervalBiFunction)
                 .orElse(IntervalBiFunction.ofIntervalFunction(config.intervalFunction));
+            config.baseIntervalBiFunction = configuredInterval;
+            config.intervalBiFunction = jitterFactor == 0.0 && maxIntervalMillis == Long.MAX_VALUE
+                ? configuredInterval
+                : (attempt, either) -> {
+                    long interval = configuredInterval.apply(attempt, either);
+                    if (jitterFactor > 0.0) {
+                        double random = randomSupplier.getAsDouble();
+                        if (Double.isNaN(random) || random < 0.0 || random >= 1.0) {
+                            throw new IllegalStateException("randomSupplier must return a value in [0, 1)");
+                        }
+                        interval = (long) (interval * (1.0 - jitterFactor + 2.0 * jitterFactor * random));
+                    }
+                    return Math.min(Math.max(interval, 0L), maxIntervalMillis);
+                };
             return config;
         }
 
