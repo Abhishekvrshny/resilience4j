@@ -40,6 +40,16 @@ class RetryConfigBuilderTest {
             .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeMaxAttemptsShouldFail() {
+        RetryConfig.custom().maxAttempts(-1);
+    }
+
+    @Test
+    public void oneMaxAttemptShouldSucceed() {
+        assertThat(RetryConfig.custom().maxAttempts(1).build().getMaxAttempts()).isEqualTo(1);
+    }
+
     @Test
     void zeroWaitInterval() {
         final RetryConfig config = RetryConfig.custom().waitDuration(Duration.ofMillis(0)).build();
@@ -56,6 +66,11 @@ class RetryConfigBuilderTest {
     void waitIntervalUnderZeroShouldFail() {
         assertThatThrownBy(() -> RetryConfig.custom().waitDuration(Duration.ofMillis(-1)).build())
             .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void negativeSubMillisecondWaitIntervalShouldFail() {
+        RetryConfig.custom().waitDuration(Duration.ofNanos(-1));
     }
 
     @Test
