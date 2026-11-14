@@ -569,6 +569,18 @@ It can be consumed for logging, assertions and any other purpose.
 
 === Examples
 
+Rate limiter failure events expose the number of available permissions when the failed
+acquisition is reported, the timeout duration used for that acquisition, and the event
+creation time. Existing event fields and constructors remain available.
+
+[source,java]
+----
+rateLimiter.getEventPublisher().onFailure(event -> {
+    logger.info("Rejected with {} available permissions and timeout {} at {}",
+        event.getAvailablePermissions(), event.getTimeoutDuration(), event.getCreationTime());
+});
+----
+
 A `+CircuitBreakerEvent+` can be a state transition, a circuit breaker reset, a successful call, a recorded error or an ignored error.
 All events contain additional information like event creation time and processing duration of the call.
 If you want to consume events, you have to register an event consumer.

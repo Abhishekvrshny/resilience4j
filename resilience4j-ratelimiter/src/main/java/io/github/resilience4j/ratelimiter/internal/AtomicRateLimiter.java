@@ -129,7 +129,7 @@ public class AtomicRateLimiter implements RateLimiter {
         long timeoutInNanos = state.get().config.getTimeoutDuration().toNanos();
         State modifiedState = updateStateWithBackOff(permits, timeoutInNanos);
         boolean result = waitForPermissionIfNecessary(timeoutInNanos, modifiedState.nanosToWait);
-        publishRateLimiterAcquisitionEvent(result, permits);
+        publishRateLimiterAcquisitionEvent(result, permits, timeoutInNanos);
         return result;
     }
 
@@ -143,17 +143,17 @@ public class AtomicRateLimiter implements RateLimiter {
 
         boolean canAcquireImmediately = modifiedState.nanosToWait <= 0;
         if (canAcquireImmediately) {
-            publishRateLimiterAcquisitionEvent(true, permits);
+            publishRateLimiterAcquisitionEvent(true, permits, timeoutInNanos);
             return 0;
         }
 
         boolean canAcquireInTime = timeoutInNanos >= modifiedState.nanosToWait;
         if (canAcquireInTime) {
-            publishRateLimiterAcquisitionEvent(true, permits);
+            publishRateLimiterAcquisitionEvent(true, permits, timeoutInNanos);
             return modifiedState.nanosToWait;
         }
 
-        publishRateLimiterAcquisitionEvent(false, permits);
+        publishRateLimiterAcquisitionEvent(false, permits, timeoutInNanos);
         return -1;
     }
 
@@ -412,7 +412,7 @@ public class AtomicRateLimiter implements RateLimiter {
         return new AtomicRateLimiterMetrics();
     }
 
-    private void publishRateLimiterAcquisitionEvent(boolean permissionAcquired, int permits) {
+    private void publishRateLimiterAcquisitionEvent(boolean permissionAcquired, int permits, long timeoutInNanos) {
         if (!eventProcessor.hasConsumers()) {
             return;
         }
@@ -420,7 +420,8 @@ public class AtomicRateLimiter implements RateLimiter {
             eventProcessor.consumeEvent(new RateLimiterOnSuccessEvent(name, permits));
             return;
         }
-        eventProcessor.consumeEvent(new RateLimiterOnFailureEvent(name, permits));
+        eventProcessor.consumeEvent(new RateLimiterOnFailureEvent(name, permits,
+            state.get().activePermissions, java.time.Duration.ofNanos(timeoutInNanos)));
     }
 
     /**

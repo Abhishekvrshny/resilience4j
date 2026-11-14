@@ -19,11 +19,14 @@
 package io.github.resilience4j.ratelimiter;
 
 import io.vavr.control.Try;
+import io.github.resilience4j.ratelimiter.event.RateLimiterOnFailureEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
 import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.then;
@@ -72,13 +75,55 @@ class RateLimiterEventPublisherTest {
 
     @Test
     void shouldConsumeOnFailureEvent() {
-        rateLimiter.getEventPublisher().onFailure(
-            event -> logger.info(event.getEventType().toString()));
+        CopyOnWriteArrayList<RateLimiterOnFailureEvent> events = new CopyOnWriteArrayList<>();
+        rateLimiter.getEventPublisher().onFailure(event -> {
+            events.add(event);
+            logger.info(event.getEventType().toString());
+        });
         rateLimiter.executeSupplier(() -> "Hello world");
 
         Try.ofSupplier(RateLimiter.decorateSupplier(rateLimiter, () -> "Hello world"));
 
         then(logger).should(times(1)).info("FAILED_ACQUIRE");
+    }
+
+    @Test
+    public void shouldIncludeFailureDetailsAndCreationTime() {
+        CopyOnWriteArrayList<RateLimiterOnFailureEvent> events = new CopyOnWriteArrayList<>();
+        rateLimiter.getEventPublisher().onFailure(events::add);
+        rateLimiter.acquirePermission();
+        ZonedDateTime beforeRejection = ZonedDateTime.now();
+        assertThat(rateLimiter.acquirePermission()).isFalse();
+
+        assertThat(events).hasSize(1);
+        assertThat(events.get(0).getAvailablePermissions()).isEqualTo(0);
+        assertThat(events.get(0).getTimeoutDuration()).isEqualTo(TIMEOUT);
+        assertThat(events.get(0).getCreationTime()).isAfterOrEqualTo(beforeRejection);
+    }
+
+    @Test
+    public void shouldPublishOneEventForEachConcurrentRejectedRequest() throws Exception {
+        CopyOnWriteArrayList<RateLimiterOnFailureEvent> events = new CopyOnWriteArrayList<>();
+        rateLimiter.getEventPublisher().onFailure(events::add);
+        rateLimiter.acquirePermission();
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(8);
+        try {
+            java.util.List<java.util.concurrent.Future<Boolean>> results = new java.util.ArrayList<>();
+            for (int i = 0; i < 20; i++) {
+                results.add(executor.submit(() -> rateLimiter.acquirePermission()));
+            }
+            for (java.util.concurrent.Future<Boolean> result : results) {
+                assertThat(result.get()).isFalse();
+            }
+        } finally {
+            executor.shutdownNow();
+        }
+        assertThat(events).hasSize(20);
+        assertThat(events).allSatisfy(event -> {
+            assertThat(event.getAvailablePermissions()).isEqualTo(0);
+            assertThat(event.getTimeoutDuration()).isEqualTo(TIMEOUT);
+            assertThat(event.getCreationTime()).isNotNull();
+        });
     }
 
 }
