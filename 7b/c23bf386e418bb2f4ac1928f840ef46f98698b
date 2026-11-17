@@ -1,0 +1,19 @@
+resilience4j-framework-common/src/test/java/io/github/resilience4j/common/retry/configuration/CommonRetryConfigurationPropertiesTest.java
+  s_5a8cb32374fe3a::t_52b759a06e9b62 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "7bc23bf386e418bb2f4ac1928f840ef46f98698b",
+  "prompts": {},
+  "sessions": {
+    "s_5a8cb32374fe3a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e752-c5f8-7732-a125-bbe73dda6c96",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Abhishek Varshney <abhishek.varshney@jiostar.com>"
+    }
+  }
+}
