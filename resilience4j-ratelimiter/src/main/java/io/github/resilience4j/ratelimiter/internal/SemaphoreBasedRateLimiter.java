@@ -165,15 +165,16 @@ public class SemaphoreBasedRateLimiter implements RateLimiter {
      */
     @Override
     public boolean acquirePermission(int permits) {
+        Duration timeoutDuration = rateLimiterConfig.get().getTimeoutDuration();
         try {
             boolean success = semaphore
-                .tryAcquire(permits, rateLimiterConfig.get().getTimeoutDuration().toNanos(),
+                .tryAcquire(permits, timeoutDuration.toNanos(),
                     TimeUnit.NANOSECONDS);
-            publishRateLimiterAcquisitionEvent(success, permits);
+            publishRateLimiterAcquisitionEvent(success, permits, timeoutDuration);
             return success;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            publishRateLimiterAcquisitionEvent(false, permits);
+            publishRateLimiterAcquisitionEvent(false, permits, timeoutDuration);
             return false;
         }
     }
@@ -251,7 +252,7 @@ public class SemaphoreBasedRateLimiter implements RateLimiter {
         return tags;
     }
 
-    private void publishRateLimiterAcquisitionEvent(boolean permissionAcquired, int permits) {
+    private void publishRateLimiterAcquisitionEvent(boolean permissionAcquired, int permits, Duration timeoutDuration) {
         if (!eventProcessor.hasConsumers()) {
             return;
         }
@@ -259,7 +260,8 @@ public class SemaphoreBasedRateLimiter implements RateLimiter {
             eventProcessor.consumeEvent(new RateLimiterOnSuccessEvent(name, permits));
             return;
         }
-        eventProcessor.consumeEvent(new RateLimiterOnFailureEvent(name, permits));
+        eventProcessor.consumeEvent(new RateLimiterOnFailureEvent(name, permits,
+            semaphore.availablePermits(), timeoutDuration));
     }
 
     /**

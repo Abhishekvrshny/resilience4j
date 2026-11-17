@@ -18,15 +18,33 @@
  */
 package io.github.resilience4j.ratelimiter.event;
 
+import java.time.Duration;
+
 public class RateLimiterOnFailureEvent extends AbstractRateLimiterEvent {
 
+    private final int availablePermissions;
+    private final Duration timeoutDuration;
+
     public RateLimiterOnFailureEvent(String rateLimiterName) {
-        super(rateLimiterName, 1);
+        this(rateLimiterName, 1);
     }
 
     public RateLimiterOnFailureEvent(String rateLimiterName, int numberOfPermits) {
-        super(rateLimiterName, numberOfPermits);
+        this(rateLimiterName, numberOfPermits, 0, Duration.ZERO);
     }
+
+    public RateLimiterOnFailureEvent(String rateLimiterName, int numberOfPermits,
+                                     int availablePermissions, Duration timeoutDuration) {
+        super(rateLimiterName, numberOfPermits);
+        this.availablePermissions = availablePermissions;
+        this.timeoutDuration = timeoutDuration;
+    }
+
+    /** Returns the available permissions at the time acquisition failed. */
+    public int getAvailablePermissions() { return availablePermissions; }
+
+    /** Returns the configured timeout used for this acquisition. */
+    public Duration getTimeoutDuration() { return timeoutDuration; }
 
     @Override
     public Type getEventType() {
