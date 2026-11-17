@@ -1,0 +1,23 @@
+resilience4j-retry/src/test/java/io/github/resilience4j/retry/RetryConfigBuilderTest.java
+  s_2d78b1af570e19::t_48f9a5ceaea944 67,69-79,81-90,92-98
+resilience4j-retry/src/main/java/io/github/resilience4j/retry/RetryConfig.java
+  s_2d78b1af570e19::t_e2e65ac45dd890 34,71-72,203-205,226-227,257-280,427-428,436,439-449,451
+  s_2d78b1af570e19::t_300fc7ae2d6fa9 69-70,233-234,438
+  s_2d78b1af570e19::t_48f9a5ceaea944 450
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "f23073f53817433f1857c0d161f3c28197b4bb2c",
+  "prompts": {},
+  "sessions": {
+    "s_2d78b1af570e19": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1d907-0ba2-7702-93d8-89b53855bfff",
+        "model": "gpt-6-luna"
+      },
+      "human_author": "Abhishek Varshney <abhishek.varshney@jiostar.com>"
+    }
+  }
+}
